@@ -41,7 +41,7 @@ export default class LinkedList {
             currentNode = currentNode.next;
         }
 
-        return [currentNode.key, currentNode.value]
+        return [currentNode.key, currentNode.value];
     }
 
     pop () {
@@ -58,7 +58,7 @@ export default class LinkedList {
         
         this.tail.next = null;
         this.length--;
-        return [popped.key, popped.value]
+        return [popped.key, popped.value];
     }
 
     contains (key) {
@@ -69,7 +69,7 @@ export default class LinkedList {
             currentNode = currentNode.next;
         }
 
-        return false
+        return false;
     }
 
     find (key) {
@@ -101,7 +101,7 @@ export default class LinkedList {
         while (currentNode.next != currentTail) {
             currentNode = currentNode.next;
         }
-        return currentNode
+        return currentNode;
     }
 
     insertAt (value, idx) {
@@ -119,4 +119,12 @@ export default class LinkedList {
     }
 
     removeAt (idx) {}
+
+    *[Symbol.iterator] () {
+        let currentNode = this.head;
+        while (currentNode !== null) {
+            yield currentNode;
+            currentNode = currentNode.next;
+        }
+    }
 }

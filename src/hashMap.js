@@ -25,15 +25,21 @@ export default class HashMap {
     }
 
     incrementBuckets (increment) {
+        console.log('c', this.num_buckets, this.length)
         this.num_buckets = increment ? this.num_buckets * 2 : this.num_buckets / 2;
-        const newBucketArray = Array.from({length: this.num_buckets}, () => null);
-        this.buckets.forEach(bucket => {
+        const clonedBuckets = this.buckets;
+
+        this.buckets = Array.from({length: this.num_buckets}, () => null);
+        
+        clonedBuckets.forEach(bucket => {
             if (bucket === null) return
             else if (bucket instanceof LinkedList) {
-
-            } else { newBucketArray[this.hash(bucket.key)] = bucket }
+                for (let node of bucket) {
+                    const newNode = new Node(node.key, node.value);
+                    this.set(newNode.key, newNode.value);
+                }
+            } else { this.set(bucket.key, bucket.value) }
         });
-        this.buckets = newBucketArray;
     }
 
     // interface
@@ -61,7 +67,7 @@ export default class HashMap {
         // this.buckets[this.hash(key)] = new Node(key, value);
         this.length++;
         if (this.length / this.num_buckets >= this.loadFactor) { this.incrementBuckets(true) }
-        console.log(this.buckets)
+        // console.log(this.buckets)
     }
 
     get (key) {
