@@ -24,14 +24,18 @@ export default class HashMap {
         return hashCode % this.num_buckets;
     }
 
+    hasHash (key) {
+        return this.buckets[this.hash(key)] ? true : false;
+    }
+
     incrementBuckets (increment) {
-        console.log('c', this.num_buckets, this.length)
         this.num_buckets = increment ? this.num_buckets * 2 : this.num_buckets / 2;
         const clonedBuckets = this.buckets;
+        this.length = 0;
 
         this.buckets = Array.from({length: this.num_buckets}, () => null);
-        
         clonedBuckets.forEach(bucket => {
+            // console.log('loop', bucket)
             if (bucket === null) return
             else if (bucket instanceof LinkedList) {
                 for (let node of bucket) {
@@ -45,7 +49,7 @@ export default class HashMap {
     // interface
 
     set (key, value) {
-        const keyPresent = this.has(key)
+        const keyPresent = this.hasHash(key);
         if (keyPresent) { // hashed key already exists
             const bucket = this.buckets[this.hash(key)];
             if (bucket instanceof Node) { // hashed key is present once
@@ -56,6 +60,7 @@ export default class HashMap {
                 linkedList.append(bucket.key, bucket.value);
                 linkedList.append(key, value);
                 this.buckets[this.hash(key)] = linkedList;
+                this.length++;
                 }
             } else { // hashed key is present more than once (LinkedList already exists)
                 const keyValueIdx = bucket.find(key);
@@ -63,19 +68,18 @@ export default class HashMap {
             }
         } else {
             this.buckets[this.hash(key)] = new Node(key, value);
+            this.length++;
         }
-        // this.buckets[this.hash(key)] = new Node(key, value);
-        this.length++;
+
         if (this.length / this.num_buckets >= this.loadFactor) { this.incrementBuckets(true) }
-        // console.log(this.buckets)
-    }
+        }
 
     get (key) {
         return this.buckets[this.hash(key)];
     }
 
     has (key) {
-        return this.buckets[this.hash(key)] ? true : false;
+        return this.buckets[this.hash(key)]?.key === key ? true : false;
     }
 
     remove (key) {
@@ -96,26 +100,35 @@ export default class HashMap {
     }
 
     keys () {
-        return this.buckets.filter(bucket => {
-            if (bucket instanceof LinkedList) {
-                //handle LL case
-            } else {
-                if (bucket !== null) return bucket;
-            }
-        })
-        .map(bucket => bucket.key);
+        return this.buckets.filter(bucket => (bucket !== null))
+            .map(bucket => {
+                if (bucket instanceof LinkedList) {
+                    const nodes = [];
+                    for (const node of bucket) nodes.push(node.key);
+                    return nodes;
+                } else { return bucket.key }})
+            .flat();
     }
 
     values () {
-        return this.buckets.filter(bucket => {
-            if (bucket instanceof LinkedList) {
-                //handle LL case
-            } else {
-                if (bucket !== null) return bucket;
-            }
-        })
-        .map(bucket => bucket.value);
+        return this.buckets.filter(bucket => (bucket !== null))
+            .map(bucket => {
+                if (bucket instanceof LinkedList) {
+                    const nodes = [];
+                    for (const node of bucket) nodes.push(node.value);
+                    return nodes;
+                } else { return bucket.value }})
+            .flat();
     }
 
-    entries () {}
+    entries () { // flatten entries stored in LinkedList
+        return this.buckets.filter(bucket => (bucket !== null))
+            .map(bucket => {
+                if (bucket instanceof LinkedList) {
+                    const nodes = [];
+                    for (const node of bucket) nodes.push([node.key, node.value]);
+                    return nodes;
+                } else { return [bucket.key, bucket.value] }})
+            .map(item => item[0] instanceof Array ? item : item);
+    }
 }
