@@ -1,6 +1,9 @@
-import Node from './node.js'
-import LinkedList from './linkedList.js'
-import HashMap from './hashMap.js'
+import HashMap from './src/hashMap.js'
 
 
 
+const hm = new HashMap();
+
+hm.set('kevin', 'spacey');
+hm.set('kevin', 'bacon');
+hm.set('kebin', 'strauss');

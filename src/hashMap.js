@@ -1,5 +1,10 @@
+import Node from './node.js'
+import LinkedList from './linkedList.js'
+
+const BASE_NUM_BUCKETS = 16;
+
 export default class HashMap {
-    constructor(num_buckets=16, loadFactor=0.8) {
+    constructor(num_buckets=4, loadFactor=0.8) {
         this.length = 0;
         this.loadFactor = loadFactor;
         this.num_buckets = num_buckets;
@@ -20,15 +25,43 @@ export default class HashMap {
     }
 
     incrementBuckets (increment) {
-        increment ? this.num_buckets * 2 : this.num_buckets / 2;
+        this.num_buckets = increment ? this.num_buckets * 2 : this.num_buckets / 2;
         const newBucketArray = Array.from({length: this.num_buckets}, () => null);
+        this.buckets.forEach(bucket => {
+            if (bucket === null) return
+            else if (bucket instanceof LinkedList) {
+
+            } else { newBucketArray[this.hash(bucket.key)] = bucket }
+        });
+        this.buckets = newBucketArray;
     }
 
     // interface
 
-    set (key, value) { //increase num buckets?
-        this.buckets[this.hash(key)] = new Node(key, value);
+    set (key, value) {
+        const keyPresent = this.has(key)
+        if (keyPresent) { // hashed key already exists
+            const bucket = this.buckets[this.hash(key)];
+            if (bucket instanceof Node) { // hashed key is present once
+                if (bucket.key === key) { // same unhashed key => update value
+                    bucket.value = value;
+                } else { // different unhashed key => create new LinkedList and append new key-value pair
+                const linkedList = new LinkedList();
+                linkedList.append(bucket.key, bucket.value);
+                linkedList.append(key, value);
+                this.buckets[this.hash(key)] = linkedList;
+                }
+            } else { // hashed key is present more than once (LinkedList already exists)
+                const keyValueIdx = bucket.find(key);
+                keyValueIdx === null ? bucket.append(key, value) : bucket.insertAt(value, keyValueIdx);
+            }
+        } else {
+            this.buckets[this.hash(key)] = new Node(key, value);
+        }
+        // this.buckets[this.hash(key)] = new Node(key, value);
         this.length++;
+        if (this.length / this.num_buckets >= this.loadFactor) { this.incrementBuckets(true) }
+        console.log(this.buckets)
     }
 
     get (key) {
@@ -39,10 +72,11 @@ export default class HashMap {
         return this.buckets[this.hash(key)] ? true : false;
     }
 
-    remove (key) { //decrease num buckets?
+    remove (key) {
         if (!this.has(key)) return
         this.buckets[this.hash(key)] = null;
         this.length--;
+        if (this.num_buckets > BASE_NUM_BUCKETS && this.length / 2 < this.num_buckets) { this.incrementBuckets(false) }
     }
 
     length () {
@@ -50,7 +84,7 @@ export default class HashMap {
     }
 
     clear () {
-        this.num_buckets = 16;
+        this.num_buckets = BASE_NUM_BUCKETS;
         this.length = 0;
         this.buckets = Array.from({length: this.num_buckets}, () => null);
     }

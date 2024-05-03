@@ -1,10 +1,12 @@
+import Node from './node.js'
+
 export default class LinkedList {
     head = null;
     tail = null;
     length = 0;
 
-    append (value) {
-        const node = new Node(value);
+    append (key, value) {
+        const node = new Node(key, value);
         this.length++;
         
         if (!this.head) {
@@ -16,8 +18,8 @@ export default class LinkedList {
         this.tail = node;
     }
 
-    preppend (value) {
-        const node = new Node(value);
+    preppend (key, value) {
+        const node = new Node(key, value);
         this.length++;
 
         if (!this.tail) {
@@ -39,7 +41,7 @@ export default class LinkedList {
             currentNode = currentNode.next;
         }
 
-        return currentNode.value
+        return [currentNode.key, currentNode.value]
     }
 
     pop () {
@@ -56,25 +58,25 @@ export default class LinkedList {
         
         this.tail.next = null;
         this.length--;
-        return popped.value
+        return [popped.key, popped.value]
     }
 
-    contains (value) {
+    contains (key) {
         let currentNode = this.head;
 
         while (currentNode) {
-            if (currentNode.value == value ) { return true }
+            if (currentNode.key == key) { return true }
             currentNode = currentNode.next;
         }
 
         return false
     }
 
-    find (value) {
+    find (key) {
         let currentNode = this.head;
         let idx = 0;
         while (currentNode) {
-            if (currentNode.value == value) { return idx}
+            if (currentNode.key == key) { return idx}
             idx++;
             currentNode = currentNode.next;
         }
@@ -87,7 +89,7 @@ export default class LinkedList {
         let string = '';
 
         while (currentNode) {
-            string += `(${currentNode.value}) --> `;
+            string += `(${[currentNode.key, currentNode.value]}) --> `;
             currentNode = currentNode.next;
         }
         string += 'null';
@@ -102,7 +104,19 @@ export default class LinkedList {
         return currentNode
     }
 
-    insertAt (value, idx) {}
+    insertAt (value, idx) {
+        if (idx > this.length - 1) { return 'Out of range' }
+
+        let i = 0;
+        let currentNode = this.head;
+        console.log(currentNode)
+        while (i < idx) {
+            i++;
+            currentNode = currentNode.next;
+        }
+        console.log(currentNode)
+        currentNode.value = value;
+    }
 
     removeAt (idx) {}
 }
